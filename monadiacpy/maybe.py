@@ -10,8 +10,6 @@ class Maybe:
         if self.is_empty:
             return self
         result = function(self.value)
-        if isinstance(result, Maybe):
-            result = result.value
         return Maybe(result)
 
     def __or__(self, function):

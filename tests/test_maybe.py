@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, sentinel
+
 from monadiacpy.maybe import Maybe
 
 
@@ -11,12 +12,14 @@ def test_maybe_should_not_be_empty():
     maybe = Maybe(object())
     assert maybe.is_empty is False
 
+
 def test_should_not_call_function_when_maybe_is_empty():
     maybe = Maybe(None)
     function = MagicMock()
     maybe.bind(function)
-    
+
     function.assert_not_called()
+
 
 def test_should_call_function_with_maybe_wraped_value():
     maybe = Maybe(sentinel.value)
@@ -26,7 +29,7 @@ def test_should_call_function_with_maybe_wraped_value():
     function.assert_called_with(sentinel.value)
 
 
-def test_bind_result_should_be_maybe_wraped_function_result():
+def test_bind_result_should_be_maybe_wraped_function_return_valuee():
     maybe = Maybe(sentinel.value)
     function = MagicMock(return_value=sentinel.result)
     result = maybe.bind(function)
