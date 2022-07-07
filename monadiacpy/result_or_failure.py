@@ -11,7 +11,7 @@ class ResultOrFailure:
     def is_empty(self):
         return self.is_failure is False and self.result is None
 
-    def bind(self, function):
+    def bind_result(self, function):
         if self.is_failure or self.is_empty:
             return self
         try:
@@ -20,8 +20,20 @@ class ResultOrFailure:
             return ResultOrFailure(failure=failure)
         return ResultOrFailure(result=result)
 
+    def bind_failure(self, function):
+        if self.is_empty or self.is_failure is False:
+            return self
+        try:
+            result = function(self.failure)
+        except Exception as failure:
+            return ResultOrFailure(failure=failure)
+        return ResultOrFailure(result=result)
+
     def __or__(self, function):
-        return self.bind(function)
+        return self.bind_result(function)
+
+    def __and__(self, function):
+        return self.bind_failure(function)
 
     def __repr__(self):
         if self.is_failure:
