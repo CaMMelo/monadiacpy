@@ -3,6 +3,18 @@ class ResultOrFailure:
         self.result = result
         self.failure = failure
 
+    @staticmethod
+    def result(value):
+        return ResultOrFailure(result=value)
+
+    @staticmethod
+    def failure(value):
+        return ResultOrFailure(failure=value)
+
+    @staticmethod
+    def empty():
+        return ResultOrFailure()
+
     @property
     def is_failure(self):
         return self.failure is not None
@@ -11,23 +23,30 @@ class ResultOrFailure:
     def is_empty(self):
         return self.is_failure is False and self.result is None
 
-    def bind_result(self, function):
-        if self.is_failure or self.is_empty:
+    @property
+    def value(self):
+        return self.failure if self.is_failure else self.result
+
+    def bind(self, function):
+        if self.is_empty:
             return self
         try:
-            result = function(self.result)
+            result = function(self.value)
+            if isinstance(result, ResultOrFailure):
+                result = result.value
         except Exception as failure:
             return ResultOrFailure(failure=failure)
         return ResultOrFailure(result=result)
 
-    def bind_failure(self, function):
-        if self.is_empty or self.is_failure is False:
+    def bind_result(self, function):
+        if self.is_failure:
             return self
-        try:
-            result = function(self.failure)
-        except Exception as failure:
-            return ResultOrFailure(failure=failure)
-        return ResultOrFailure(result=result)
+        return self.bind(function)
+
+    def bind_failure(self, function):
+        if self.is_failure is False:
+            return self
+        return self.bind(function)
 
     def __or__(self, function):
         return self.bind_result(function)
@@ -36,11 +55,7 @@ class ResultOrFailure:
         return self.bind_failure(function)
 
     def __repr__(self):
-        if self.is_failure:
-            return f"ResultOrFailure({repr(self.failure)})"
-        return f"ResultOrFailure({repr(self.result)})"
+        return f"ResultOrFailure({repr(self.value)})"
 
     def __str__(self):
-        if self.is_failure:
-            return str(self.failure)
-        return str(self.result)
+        return str(self.value)

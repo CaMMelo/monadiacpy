@@ -2,6 +2,10 @@ class Maybe:
     def __init__(self, value):
         self.value = value
 
+    @staticmethod
+    def empty():
+        return Maybe(None)
+
     @property
     def is_empty(self):
         return self.value is None
@@ -10,6 +14,8 @@ class Maybe:
         if self.is_empty:
             return self
         result = function(self.value)
+        if isinstance(result, Maybe):
+            result = result.value
         return Maybe(result)
 
     def __or__(self, function):
